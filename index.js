@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const config = require('./config/config');
-const users = require('./routes/users')
+const users = require('./routes/users');
+const passport = require('passport');
 // configure mongo db
 const dbUrl = config.mongodbUrl
 mongoose.connect(dbUrl)
@@ -17,6 +18,8 @@ const app = express()
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
+app.use(passport.initialize())
+require('./config/passport')(passport)
 
 app.use('/api/auth/', users)
 
