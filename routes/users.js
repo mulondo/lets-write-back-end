@@ -10,7 +10,6 @@ const registerValidation = require('../validation/register');
 const configVariable = require('../config/config')
 
 
-
 router.post('/register',cors(), (req, res) => {
     const { name, email, password } = req.body;
 
@@ -74,7 +73,7 @@ router.post('/login',cors(), (req, res) => {
                                 })
                             })
                         } else {
-                            res.json({ msg: 'wrong password' })
+                            res.status(401).json({ msg: 'wrong password' })
                         }
                     })
             }
