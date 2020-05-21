@@ -5,9 +5,13 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const config = require('./config/config');
 const users = require('./routes/users');
+const blog = require('./routes/blogPost')
+const userprofile = require('./routes/userProfile')
 const passport = require('passport');
+
 // configure mongo db
 const dbUrl = config.mongodbUrl
+
 mongoose.connect(dbUrl)
   .then(()=> console.log('MongDB successfully connected'))
   .catch(err => console.log('========>',err));
@@ -23,7 +27,10 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(passport.initialize())
 require('./config/passport')(passport)
 
+
 app.use('/api/auth/', users)
+app.use('/api/blogs/', blog)
+app.use('/api/profile',userprofile)
 
 const port = process.env.PORT || 3400
 
