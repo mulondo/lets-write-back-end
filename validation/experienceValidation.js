@@ -15,7 +15,6 @@ module.exports = function validateExperienceInput(data) {
         errors.from = 'from date is missing';
     }
     
-    
     return {
         errors,
         isValid: isEmpty(errors)
