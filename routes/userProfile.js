@@ -151,7 +151,6 @@ router.post('/experience',passport.authenticate('jwt',({session: false})),(req,r
             to, 
             current
         }
-        console.log('-------------------',profile)
         profile.experience.unshift(values)
         profile.save()
         .then(prof => res.json(prof))
