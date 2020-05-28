@@ -4,6 +4,24 @@ const Profile = require('../Models/UserProfile')
 const passport = require('passport')
 const Users = require('../Models/Users')
 const validation = require('../validation/userProfileValidation')
+const experienceValidation = require('../validation/experienceValidation')
+
+/**
+ * @Route Get api/profile/all
+ * @Description get all the users profiles
+ * @Access public 
+ */
+router.get('/all',(req,res) => {
+    Profile.find()
+    .populate('user',['name', 'photo'])
+    .then(profile => {
+        if(!profile) {
+            res.json({error: 'there are no profiles'})
+        } else {
+            res.json(profile)
+        }
+    })
+})
 
 /**
  * @Route Get api/profile
@@ -11,8 +29,8 @@ const validation = require('../validation/userProfileValidation')
  * @Access private
  */
 router.get('/', passport.authenticate('jwt',({session: false})), (req,res) => {
-    console.log('-------------------', req.user.id)
     Profile.findOne({user: req.user._id})
+    .populate('user',['name','photo'])
     .then(profile => {
         if(!profile) {
             res.status(404).json({error: 'profile not find'})
@@ -85,7 +103,7 @@ router.post('/',passport.authenticate('jwt',({session: false})), (req, res) => {
  */
 router.get('/handle/:handle',(req,res) => {
     Profile.findOne({handle: req.params.handle})
-    .populate('user')
+    .populate('user',['name', 'photo'])
     .then(profile => {
         if(!profile) {
             res.json({error: `Userprofile with ${req.params.handle} doesn't exist`})
@@ -95,6 +113,7 @@ router.get('/handle/:handle',(req,res) => {
     })
 })
 
+
 /**
  * @Route Get api/profile/userId/:id
  * @Description get the user r by handle
@@ -102,7 +121,7 @@ router.get('/handle/:handle',(req,res) => {
  */
 router.get('/user/:userId',(req,res) => {
     Profile.findOne({user: req.params.userId})
-    .populate('user',['name', 'photo','email'])
+    .populate('user',['name', 'photo'])
     .then(profile => {
         if(!profile) {
             res.json({error: `Userprofile with ${req.params.userId} doesn't exist`})
@@ -110,5 +129,50 @@ router.get('/user/:userId',(req,res) => {
             res.json(profile)
         }
     })
+})
+
+/**
+ * @Route Post api/profile/experience
+ * @Description add experience
+ * @Access private
+ */
+router.post('/experience',passport.authenticate('jwt',({session: false})),(req,res) => {
+    const {errors, isValid} = experienceValidation(req.body)
+    if(!isValid){
+        res.status(400).json(errors)
+    }
+    Profile.findOne({user: req.user.id})
+    .then(profile => {
+        const {title, company, from, to, current} = req.body
+        const values = {
+            title, 
+            company, 
+            from, 
+            to, 
+            current
+        }
+        profile.experience.unshift(values)
+        profile.save()
+        .then(prof => res.json(prof))
+        .catch(err => res.send(err))
+    })
+    .catch(error => res.json(error))
+})
+
+/**
+ * @Route Delete api/profile/experience/:id
+ * @Description delete experience
+ * @Access private
+ */
+router.delete('/experience/:id',passport.authenticate('jwt',({session: false})),(req,res) => {
+    
+    Profile.findOne({user: req.user.id})
+    .then(profile => {
+        const deleteExperience = profile.experience.find(exp => exp.id === req.params.id)
+        profile.experience.splice(deleteExperience,1)
+        profile.save()
+        .then(del => res.status(200).json(del))
+    })
+    .catch(error => res.json(error))
 })
 module.exports = router
