@@ -36,6 +36,7 @@ router.post('/register',cors(), (req, res) => {
                     })
                     bcrypt.genSalt(10, (err, salt) => {
                         bcrypt.hash(newUser.password, salt, (err, hash) => {
+                            if(err) throw err;
                             newUser.password = hash
                             newUser.save()
                                 .then(user => res.status(201).json({ user: user }))
@@ -58,7 +59,7 @@ router.post('/login',cors(), (req, res) => {
                 bcrypt.compare(password, user.password)
                     .then(isMatch => {
                         if (isMatch) {
-                            const payload = { id:user._id, email: user.email, name: user.name, school: 'muk' }
+                            const payload = { id:user.id, email: user.email, name: user.name, school: 'muk', photo: user.photo}
                             /** Generating a JWT
                              * The jwt.sign takes in
                              * 1. The payload
@@ -69,7 +70,7 @@ router.post('/login',cors(), (req, res) => {
                             jwt.sign(payload, configVariable.secrete, { expiresIn: 3600 }, (err, token) => {
                                 res.json({
                                     success: true,
-                                    token: 'Bearer ' + token
+                                    token: 'Bearer ' + token,
                                 })
                             })
                         } else {
