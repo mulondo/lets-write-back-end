@@ -3,6 +3,7 @@ const router = express.Router()
 const passport = require('passport')
 const Blog = require('../Models/Blog')
 const ValidateBlog = require('../validation/blogValidation')
+const Profile = require('../Models/UserProfile')
 
 
 /**
@@ -11,6 +12,7 @@ const ValidateBlog = require('../validation/blogValidation')
  * @Access public
  */
 router.get('/', (req,res) => {
+    console.log('-----',req.user)
     Blog.find()
       .sort({date: -1})
       .then(blogs => res.json(blogs))
@@ -43,7 +45,34 @@ router.post('/',passport.authenticate('jwt',{session: false}), (req,res) => {
     const newBlog = new Blog({
         text: req.body.text,
         category: req.body.category,
-        title: req.body.title
+        title: req.body.title,
+        user: req.user.id
+    })
+    newBlog.save()
+        .then(blog => res.json(blog))
+        .catch(errors => res.json(errors))
+})
+
+/**
+ * @Route Delete api/blog
+ * @Description delete a blog
+ * @Access Private
+*/
+router.post('/:blogId',passport.authenticate('jwt',{session: false}), (req,res) => {
+    Profile.findOne({user: req.user.id})
+      .then(profile => {
+          Blog.findById(req.params.blogId)
+            .then(blog => {
+                blog.remove()
+                  .then(()=>res.json({msg: sucess}))
+
+            })
+      })
+    const newBlog = new Blog({
+        text: req.body.text,
+        category: req.body.category,
+        title: req.body.title,
+        user: req.user.id
     })
     newBlog.save()
         .then(blog => res.json(blog))
