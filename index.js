@@ -28,9 +28,9 @@ app.use(passport.initialize())
 require('./config/passport')(passport)
 
 
-app.use('/api/auth/', users)
-app.use('/api/blogs/', blog)
-app.use('/api/profile',userprofile)
+app.use('/api/auth/',cors(), users)
+app.use('/api/blogs/',cors(), blog)
+app.use('/api/profile',cors(),userprofile)
 
 const port = process.env.PORT || 3400
 
