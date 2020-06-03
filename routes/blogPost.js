@@ -53,30 +53,26 @@ router.post('/',passport.authenticate('jwt',{session: false}), (req,res) => {
         .catch(errors => res.json(errors))
 })
 
+
 /**
- * @Route Delete api/blog
+ * @Route Delete api/blog/blogId
  * @Description delete a blog
  * @Access Private
 */
-router.post('/:blogId',passport.authenticate('jwt',{session: false}), (req,res) => {
+router.delete('/:blogId',passport.authenticate('jwt',{session: false}), (req,res) => {
     Profile.findOne({user: req.user.id})
       .then(profile => {
+          if(profile.user.toString()!== req.user.id){
+              return res.status(401).json({not_authorized: 'Not authorized'})
+          }
           Blog.findById(req.params.blogId)
             .then(blog => {
                 blog.remove()
-                  .then(()=>res.json({msg: sucess}))
+                  .then(()=>res.json({message: 'sucessfully deleted'}))
+                  .catch(error => res.json({error: error}))
 
             })
       })
-    const newBlog = new Blog({
-        text: req.body.text,
-        category: req.body.category,
-        title: req.body.title,
-        user: req.user.id
-    })
-    newBlog.save()
-        .then(blog => res.json(blog))
-        .catch(errors => res.json(errors))
 })
 
 module.exports = router
