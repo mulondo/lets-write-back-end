@@ -50,6 +50,7 @@ router.post('/register',cors(), (req, res) => {
 });
 
 router.post('/login', (req, res) => {
+    res.header("Access-Control-Allow-Origin", process.env.ORIGIN || "*");
     const { email, password } = req.body
     User.findOne({ email })
         .then(user => {
