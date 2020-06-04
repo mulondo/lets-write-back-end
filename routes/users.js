@@ -10,7 +10,7 @@ const registerValidation = require('../validation/register');
 const configVariable = require('../config/config')
 
 
-router.post('/register',cors(), (req, res) => {
+router.post('/register', (req, res) => {
     const { name, email, password } = req.body;
 
     const { errors, isValid } = registerValidation(req.body)
@@ -49,7 +49,7 @@ router.post('/register',cors(), (req, res) => {
 
 });
 
-router.post('/login',cors(), (req, res) => {
+router.post('/login', (req, res) => {
     const { email, password } = req.body
     User.findOne({ email })
         .then(user => {
