@@ -50,7 +50,13 @@ router.post('/register',cors(), (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    res.header("Access-Control-Allow-Origin", process.env.ORIGIN || "*");
+    console.log('----------->',req.body)
+    
+    const {isValid, errors} = registerValidation(req.body)
+
+    if(!isValid) {
+        return res.status(400).json(errors)
+    }
     const { email, password } = req.body
     User.findOne({ email })
         .then(user => {
