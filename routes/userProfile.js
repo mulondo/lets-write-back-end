@@ -13,7 +13,7 @@ const experienceValidation = require('../validation/experienceValidation')
  */
 router.get('/all',(req,res) => {
     Profile.find()
-    .populate('user',['name', 'photo'])
+    .populate('user',['username', 'photo'])
     .then(profile => {
         if(!profile) {
             res.json({error: 'there are no profiles'})
@@ -30,7 +30,7 @@ router.get('/all',(req,res) => {
  */
 router.get('/', passport.authenticate('jwt',({session: false})), (req,res) => {
     Profile.findOne({user: req.user._id})
-    .populate('user',['name','photo'])
+    .populate('user',['username','photo'])
     .then(profile => {
         if(!profile) {
             res.status(404).json({error: 'profile not find'})
@@ -103,7 +103,7 @@ router.post('/',passport.authenticate('jwt',({session: false})), (req, res) => {
  */
 router.get('/handle/:handle',(req,res) => {
     Profile.findOne({handle: req.params.handle})
-    .populate('user',['name', 'photo'])
+    .populate('user',['username', 'photo'])
     .then(profile => {
         if(!profile) {
             res.json({error: `Userprofile with ${req.params.handle} doesn't exist`})
@@ -121,7 +121,7 @@ router.get('/handle/:handle',(req,res) => {
  */
 router.get('/user/:userId',(req,res) => {
     Profile.findOne({user: req.params.userId})
-    .populate('user',['name', 'photo'])
+    .populate('user',['username', 'photo'])
     .then(profile => {
         if(!profile) {
             res.json({error: `Userprofile with ${req.params.userId} doesn't exist`})

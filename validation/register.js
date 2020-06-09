@@ -8,6 +8,8 @@ module.exports = function validateLoginInput(data) {
     // console.log('--------------------------------->', data.email)
   
     // more work is still required here
+
+    data.username = !isEmpty(data.username) ? data.username: '';
     data.email = !isEmpty(data.email) ? data.email: '';
 
     console.log('-------------------------->', data.email)
@@ -22,6 +24,10 @@ module.exports = function validateLoginInput(data) {
     if(validator.isEmpty(data.email)) {
         errors.email = 'Email is required';
     } 
+
+    if(validator.isEmpty(data.username)) {
+        errors.username = 'Username is required';
+    }
     
     // password validation
     if(validator.isEmpty(data.password)) {

@@ -3,17 +3,22 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
-const passport = require('passport')
 const User = require('../Models/Users');
 const router = express.Router();
 const registerValidation = require('../validation/register');
+const validateLoginInput = require('../validation/loginValidation')
 const configVariable = require('../config/config')
 
 
 router.post('/register',cors(), (req, res) => {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     const { errors, isValid } = registerValidation(req.body)
+    
+    if(!isValid) {
+        console.log('---------->error ',errors)
+        return res.status(400).json(errors)
+    }
 
     if (!(Object.keys(errors).length === 0 && errors.constructor === Object)) {
         res.send(errors)
@@ -29,7 +34,7 @@ router.post('/register',cors(), (req, res) => {
                         d: 'mm'
                     });
                     const newUser = new User({
-                        name,
+                        username,
                         email,
                         photo,
                         password
@@ -52,9 +57,10 @@ router.post('/register',cors(), (req, res) => {
 router.post('/login', (req, res) => {
     console.log('----------->',req.body)
     
-    const {isValid, errors} = registerValidation(req.body)
+    const {isValid, errors} = validateLoginInput(req.body)
 
     if(!isValid) {
+        console.log('---------->error ',errors)
         return res.status(400).json(errors)
     }
     const { email, password } = req.body
@@ -66,7 +72,7 @@ router.post('/login', (req, res) => {
                 bcrypt.compare(password, user.password)
                     .then(isMatch => {
                         if (isMatch) {
-                            const payload = { id:user.id, email: user.email, name: user.name, school: 'muk', photo: user.photo}
+                            const payload = { id:user.id, email: user.email, username: user.username, school: 'muk', photo: user.photo}
                             /** Generating a JWT
                              * The jwt.sign takes in
                              * 1. The payload
@@ -81,7 +87,8 @@ router.post('/login', (req, res) => {
                                 })
                             })
                         } else {
-                            res.status(401).json({ msg: 'wrong password' })
+                            console.log('--------------> wrong password---')
+                            res.status(401).json({ unauthorized: 'Incorrect email or password' })
                         }
                     })
             }
