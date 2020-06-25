@@ -36,6 +36,7 @@ router.get('/:id', (req,res) => {
  * @Access Private
 */
 router.post('/',passport.authenticate('jwt',{session: false}), (req,res) => {
+    console.log('this is the user =============> ', req)
     const {errors,isValid} = ValidateBlog(req.body)
     
     if(!isValid) {
@@ -53,6 +54,35 @@ router.post('/',passport.authenticate('jwt',{session: false}), (req,res) => {
         .catch(errors => res.json(errors))
 })
 
+
+/**
+ * @Route Put api/blog
+ * @Description Update a blog
+ * @Access Private
+*/
+router.put('/:blogId',passport.authenticate('jwt',{session: false}), (req,res) => {
+    const newBlog = {
+        text: req.body.text,
+        category: req.body.category,
+        title: req.body.title,
+        user: req.user.id
+    }
+    Profile.findOne({user: req.user.id})
+      .then(profile => {
+          if(profile.user.toString()!== req.user.id){
+              return res.status(401).json({not_authorized: 'Not authorized'})
+          }
+          Blog.findOneAndUpdate(
+              {_id:req.params.blogId},
+              {$set:newBlog},
+              {new: true}
+            )
+            .then(blog => {
+                res.json({updated: 'successful',blog:blog})
+
+            })
+      })
+})
 
 /**
  * @Route Delete api/blog/blogId
@@ -73,6 +103,103 @@ router.delete('/:blogId',passport.authenticate('jwt',{session: false}), (req,res
 
             })
       })
+})
+
+/**
+ * @Route Post api/blog/like/:id
+ * @Description like a blog
+ * @Access Private
+*/
+router.post('/like/:id',passport.authenticate('jwt',{session: false}), (req,res) => {
+    
+    Blog.findById(req.params.id)
+    .then(blog => {
+        if(blog.likes.filter(like => like.user.toString() === req.user.id).length > 0){
+        const removeIndex = blog.likes.map(item => item.user.toString()).indexOf(req.user.id)
+
+        blog.likes.splice(removeIndex, 1)
+        return (blog.save()
+            .then(results => res.json({success: true,results})))
+        } 
+        blog.likes.unshift({user:req.user.id})
+
+        blog.save()
+        .then(results => res.json({success: true,results}))
+        
+        
+    })
+    .catch(err => res.json({error:err}))
+})
+
+/**
+ * @Route Post api/blog/like/:id
+ * @Description like a blog
+ * @Access Private
+*/
+router.post('/unlike/:id',passport.authenticate('jwt',{session: false}), (req,res) => {
+
+    Blog.findById(req.params.id)
+    .then(blog => {
+        if(blog.likes.filter(like => like.user.toString() === req.user.id).length === 0){
+        return res.status(400).json({alreadyliked: 'you need to first like it'})
+        } 
+        const removeIndex = blog.likes.map(item => item.user.toString()).indexOf(req.user.id)
+
+        blog.likes.splice(removeIndex, 1)
+        blog.save()
+        .then(results => res.json({success: true,results}))
+        // return res.json({liked: 'successfully'})
+        
+    })
+    .catch(err => res.json({error:err}))
+})
+
+
+/**
+ * @Route Post api/blog/comment/:id
+ * @Description comment to a blog
+ * @Access Private
+*/
+
+router.post('/comment/:id',passport.authenticate('jwt',{session: false}), (req,res) => {
+    
+    Blog.findById(req.params.id)
+    .then(blog => {
+        const comment = {
+            text: req.body.text,
+            name: req.user.name,
+            photo: req.user.photo,
+            user:req.user.id
+        }
+        blog.comments.unshift(comment)
+        blog.save()
+            .then(results => res.json({success: true,results}))
+        })
+    .catch(() => res.json({error:'blog not found'}))
+})
+
+
+/**
+ * @Route Post api/blog/comment/:id
+ * @Description comment to a blog
+ * @Access Private
+*/
+
+router.delete('/comment/:id/:comment_id',passport.authenticate('jwt',{session: false}), (req,res) => {
+    console.log('----------------> ',req)
+    Blog.findById(req.params.id)
+    .then(blog => {
+
+        // if(blog.comments.filter(comment => comment._id.toString() === res.params.comment_id).length() ===0){
+        //     return res.status(404).json({message: 'comment not found'})
+        // }
+
+        const removeIndex = blog.comments.map(item => item._id.toString()).indexOf(req.params.comment_id)
+        blog.comments.splice(removeIndex, 1)
+        blog.save()
+            .then(results => res.json({success: true,results}))
+        })
+    .catch(() => res.json({error:'blog not found'}))
 })
 
 module.exports = router
