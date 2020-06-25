@@ -55,12 +55,12 @@ router.post('/register',cors(), (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    console.log('----------->',req.body)
     
     const {isValid, errors} = validateLoginInput(req.body)
 
+    console.log('---------------> this ----user-----,',req.body)
+
     if(!isValid) {
-        console.log('---------->error ',errors)
         return res.status(400).json(errors)
     }
     const { email, password } = req.body
@@ -87,7 +87,6 @@ router.post('/login', (req, res) => {
                                 })
                             })
                         } else {
-                            console.log('--------------> wrong password---')
                             res.status(401).json({ unauthorized: 'Incorrect email or password' })
                         }
                     })
